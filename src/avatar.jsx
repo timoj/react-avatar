@@ -377,31 +377,58 @@ class Avatar extends React.Component {
   }
 
   initCrop() {
-    return new Konva.Circle({
+    // return new Konva.Circle({
+    //   x: this.halfWidth,
+    //   y: this.halfHeight,
+    //   radius: this.cropRadius,
+    //   fillPatternImage: this.image,
+    //   fillPatternOffset: {
+    //     x: this.halfWidth / this.scale,
+    //     y: this.halfHeight / this.scale
+    //   },
+    //   fillPatternScale: {
+    //     x: this.scale,
+    //     y: this.scale
+    //   },
+    //   opacity: 1,
+    //   draggable: true,
+    //   dashEnabled: true,
+    //   dash: [10, 5]
+    // })
+    return new Konva.Rect({
       x: this.halfWidth,
       y: this.halfHeight,
-      radius: this.cropRadius,
-      fillPatternImage: this.image,
-      fillPatternOffset: {
-        x: this.halfWidth / this.scale,
-        y: this.halfHeight / this.scale
-      },
-      fillPatternScale: {
-        x: this.scale,
-        y: this.scale
-      },
-      opacity: 1,
-      draggable: true,
-      dashEnabled: true,
-      dash: [10, 5]
+      width: this.width,
+      height: this.height,
+      // fill: this.shadingColor,
+      strokeWidth: 4,
+      opacity: this.shadingOpacity
     })
+    // return new Konva.Rect({
+    //   x: this.halfWidth,
+    //   y: this.halfHeight,
+    //   radius: this.cropRadius,
+    //   fillPatternImage: this.image,
+    //   fillPatternOffset: {
+    //     x: this.halfWidth / this.scale,
+    //     y: this.halfHeight / this.scale
+    //   },
+    //   fillPatternScale: {
+    //     x: this.scale,
+    //     y: this.scale
+    //   },
+    //   opacity: 1,
+    //   draggable: true,
+    //   dashEnabled: true,
+    //   dash: [10, 5]
+    // })
   }
 
   initCropStroke() {
-    return new Konva.Circle({
+    return new Konva.Rect({
       x: this.halfWidth,
       y: this.halfHeight,
-      radius: this.cropRadius,
+      // radius: this.cropRadius,
       stroke: this.cropColor,
       strokeWidth: this.lineWidth,
       strokeScaleEnabled: true,
