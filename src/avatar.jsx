@@ -165,7 +165,7 @@ class Avatar extends React.Component {
 
     const image = this.props.img || new Image();
     if (!this.props.img && this.props.src) image.src = this.props.src;
-    this.setState({ image }, () => {
+    this.setState({image}, () => {
       if (this.image.complete) return this.init();
       this.image.onload = () => {
         this.onImageLoadCallback(this.image);
@@ -178,11 +178,11 @@ class Avatar extends React.Component {
     e.preventDefault();
 
     this.onBeforeFileLoadCallback(e);
-    if(!e.target.value) return;
+    if (!e.target.value) return;
 
     let reader = new FileReader();
     let file = e.target.files[0];
-    
+
     this.onFileLoadCallback(file);
 
     const image = new Image();
@@ -190,7 +190,7 @@ class Avatar extends React.Component {
     reader.onloadend = () => {
       image.src = reader.result;
 
-      ref.setState({ image, file, showLoader: false }, () => {
+      ref.setState({image, file, showLoader: false}, () => {
         if (ref.image.complete) return ref.init();
         ref.image.onload = () => ref.init()
       })
@@ -199,15 +199,15 @@ class Avatar extends React.Component {
   }
 
   onCloseClick() {
-    this.setState({ showLoader: true }, () => this.onCloseCallback())
+    this.setState({showLoader: true}, () => this.onCloseCallback())
   }
 
   init() {
-    const { height, minCropRadius, cropRadius } = this.props;
+    const {height, minCropRadius, cropRadius} = this.props;
     const originalWidth = this.image.width;
     const originalHeight = this.image.height;
     const ration = originalHeight / originalWidth;
-    const { imageWidth, imageHeight } = this.props;
+    const {imageWidth, imageHeight} = this.props;
     let imgHeight;
     let imgWidth;
 
@@ -243,8 +243,8 @@ class Avatar extends React.Component {
     const shading = this.initShading();
     const crop = this.initCrop();
     const cropStroke = this.initCropStroke();
-    const resize = this.initResize();
-    const resizeIcon = this.initResizeIcon();
+    const resize = this.initResize(crop);
+    const resizeIcon = this.initResizeIcon(crop);
 
     const layer = new Konva.Layer();
 
@@ -258,37 +258,41 @@ class Avatar extends React.Component {
 
     stage.add(layer);
 
-    const scaledRadius = (scale = 0) => crop.radius() - scale;
-    const isLeftCorner = scale => crop.x() - scaledRadius(scale) < 0;
-    const calcLeft = () => crop.radius() + 1;
-    const isTopCorner = scale => crop.y() - scaledRadius(scale) < 0;
-    const calcTop = () => crop.radius() + 1;
-    const isRightCorner = scale => crop.x() + scaledRadius(scale) > stage.width();
-    const calcRight = () => stage.width() - crop.radius() - 1;
-    const isBottomCorner = scale => crop.y() + scaledRadius(scale) > stage.height();
-    const calcBottom = () => stage.height() - crop.radius() - 1;
+    const scaledRadius = (scale = 0) => crop.width() - scale;
+    const isLeftCorner = scale => crop.x() < 0;
+    const calcLeft = () => 0;
+    const isTopCorner = scale => crop.y() < 0;
+    const calcTop = () => 0;
+    const isRightCorner = scale => crop.x() + crop.width() > stage.width();
+    const calcRight = () => stage.width() - crop.width();
+    const isBottomCorner = scale => crop.y() + crop.height() > stage.height();
+    const calcBottom = () => stage.height() - crop.height();
     const isNotOutOfScale = scale => !isLeftCorner(scale) && !isRightCorner(scale) && !isBottomCorner(scale) && !isTopCorner(scale);
-    const calcScaleRadius = scale => scaledRadius(scale) >= this.minCropRadius ? scale : crop.radius() - this.minCropRadius;
-    const calcResizerX = x => x + (crop.radius() * 0.86);
-    const calcResizerY = y => y - (crop.radius() * 0.5);
+    const calcScaleRadius = scale => scaledRadius(scale) >= this.minCropRadius ? scale : (crop.height() / 2) - this.minCropRadius;
+    const calcResizerX = x => (crop.x() + crop.width());
+    const calcResizerY = y => (crop.y());
     const moveResizer = (x, y) => {
-      resize.x(calcResizerX(x) - 8);
-      resize.y(calcResizerY(y) - 8);
-      resizeIcon.x(calcResizerX(x) - 8);
-      resizeIcon.y(calcResizerY(y) - 10)
+      resize.x(calcResizerX(x) + 5);
+      resize.y(calcResizerY(y) - 20);
+      resizeIcon.x(calcResizerX(x) + 5);
+      resizeIcon.y(calcResizerY(y) - 20)
     };
 
     const getPreview = () => crop.toDataURL({
-      x: crop.x() - crop.radius(),
-      y: crop.y() - crop.radius(),
-      width: crop.radius() * 2,
-      height: crop.radius() * 2
+      x: crop.x() - crop.width() / 2,
+      y: crop.y() - crop.height() / 2,
+      width: crop.width(),
+      height: crop.height()
     });
 
     const onScaleCallback = (scaleY) => {
       const scale = scaleY > 0 || isNotOutOfScale(scaleY) ? scaleY : 0;
-      cropStroke.radius(cropStroke.radius() - calcScaleRadius(scale));
-      crop.radius(crop.radius() - calcScaleRadius(scale));
+      // cropStroke.radius(cropStroke.radius() - calcScaleRadius(scale));
+      cropStroke.width(cropStroke.width() - calcScaleRadius(scale));
+      cropStroke.height(cropStroke.height() - calcScaleRadius(scale));
+      // crop.radius(crop.radius() - calcScaleRadius(scale));
+      crop.width(crop.width() - calcScaleRadius(scale));
+      crop.height(crop.height() - calcScaleRadius(scale));
       resize.fire('resize')
     };
 
@@ -301,7 +305,7 @@ class Avatar extends React.Component {
       const x = isLeftCorner() ? calcLeft() : (isRightCorner() ? calcRight() : crop.x());
       const y = isTopCorner() ? calcTop() : (isBottomCorner() ? calcBottom() : crop.y());
       moveResizer(x, y);
-      crop.setFillPatternOffset({ x: x / this.scale, y: y / this.scale });
+      crop.setFillPatternOffset({x: x / this.scale, y: y / this.scale});
       crop.x(x);
       cropStroke.x(x);
       crop.y(y);
@@ -395,14 +399,25 @@ class Avatar extends React.Component {
     //   dashEnabled: true,
     //   dash: [10, 5]
     // })
+    let lowestSide = this.width > this.height ? this.height : this.width;
     return new Konva.Rect({
-      x: this.halfWidth,
-      y: this.halfHeight,
-      width: this.width,
-      height: this.height,
-      // fill: this.shadingColor,
-      strokeWidth: 4,
-      opacity: this.shadingOpacity
+      x: this.halfWidth - (lowestSide * 0.8) / 2,
+      y: this.halfHeight - (lowestSide * 0.8) / 2,
+      width: lowestSide * 0.8,
+      height: lowestSide * 0.8,
+      fillPatternImage: this.image,
+      fillPatternOffset: {
+        x: (this.halfWidth - (lowestSide * 0.8) / 2) / this.scale,
+        y: (this.halfHeight - (lowestSide * 0.8) / 2) / this.scale
+      },
+      fillPatternScale: {
+        x: this.scale,
+        y: this.scale
+      },
+      opacity: 1,
+      draggable: true,
+      dashEnabled: true,
+      dash: [10, 5]
     })
     // return new Konva.Rect({
     //   x: this.halfWidth,
@@ -425,10 +440,12 @@ class Avatar extends React.Component {
   }
 
   initCropStroke() {
+    let lowestSide = this.width > this.height ? this.height : this.width;
     return new Konva.Rect({
-      x: this.halfWidth,
-      y: this.halfHeight,
-      // radius: this.cropRadius,
+      x: this.halfWidth - (lowestSide * 0.8) / 2,
+      y: this.halfHeight - (lowestSide * 0.8) / 2,
+      width: lowestSide * 0.8,
+      height: lowestSide * 0.8,
       stroke: this.cropColor,
       strokeWidth: this.lineWidth,
       strokeScaleEnabled: true,
@@ -437,26 +454,32 @@ class Avatar extends React.Component {
     })
   }
 
-  initResize() {
+  initResize(crop) {
+    let size = crop.width();
+    let x = crop.x();
+    let y = crop.y();
     return new Konva.Rect({
-      x: this.halfWidth + this.cropRadius * 0.86 - 8,
-      y: this.halfHeight + this.cropRadius * -0.5 - 8,
+      x: x + size + 5,
+      y: y - 20,
       width: 16,
       height: 16,
       draggable: true,
       dragBoundFunc: function (pos) {
         return {
-          x: this.getAbsolutePosition().x,
-          y: pos.y
+          x: this.getAbsolutePosition().x + 5,
+          y: pos.y - 20
         }
       }
     })
   }
 
-  initResizeIcon() {
+  initResizeIcon(crop) {
+    let size = crop.width();
+    let x = crop.x();
+    let y = crop.y();
     return new Konva.Path({
-      x: this.halfWidth + this.cropRadius * 0.86 - 8,
-      y: this.halfHeight + this.cropRadius * -0.5 - 10,
+      x: x + size + 5,
+      y: y - 20,
       data: 'M47.624,0.124l12.021,9.73L44.5,24.5l10,10l14.661-15.161l9.963,12.285v-31.5H47.624z M24.5,44.5   L9.847,59.653L0,47.5V79h31.5l-12.153-9.847L34.5,54.5L24.5,44.5z',
       fill: this.cropColor,
       scale: {
@@ -467,7 +490,7 @@ class Avatar extends React.Component {
   }
 
   render() {
-    const { width, height } = this.props;
+    const {width, height} = this.props;
 
     const style = {
       display: 'flex',
@@ -488,7 +511,7 @@ class Avatar extends React.Component {
 
     const label = this.props.label;
 
-    const labelStyle = { ...this.props.labelStyle, ...{ lineHeight: (height || 200) + 'px' } };
+    const labelStyle = {...this.props.labelStyle, ...{lineHeight: (height || 200) + 'px'}};
 
     const borderStyle = {
       ...this.props.borderStyle, ...{
@@ -528,13 +551,13 @@ class Avatar extends React.Component {
                 <g>
                   <path
                     d="M405.6,69.6C360.7,24.7,301.1,0,237.6,0s-123.1,24.7-168,69.6S0,174.1,0,237.6s24.7,123.1,69.6,168s104.5,69.6,168,69.6    s123.1-24.7,168-69.6s69.6-104.5,69.6-168S450.5,114.5,405.6,69.6z M386.5,386.5c-39.8,39.8-92.7,61.7-148.9,61.7    s-109.1-21.9-148.9-61.7c-82.1-82.1-82.1-215.7,0-297.8C128.5,48.9,181.4,27,237.6,27s109.1,21.9,148.9,61.7    C468.6,170.8,468.6,304.4,386.5,386.5z"
-                    fill={this.closeIconColor} />
+                    fill={this.closeIconColor}/>
                   <path
                     d="M342.3,132.9c-5.3-5.3-13.8-5.3-19.1,0l-85.6,85.6L152,132.9c-5.3-5.3-13.8-5.3-19.1,0c-5.3,5.3-5.3,13.8,0,19.1    l85.6,85.6l-85.6,85.6c-5.3,5.3-5.3,13.8,0,19.1c2.6,2.6,6.1,4,9.5,4s6.9-1.3,9.5-4l85.6-85.6l85.6,85.6c2.6,2.6,6.1,4,9.5,4    c3.5,0,6.9-1.3,9.5-4c5.3-5.3,5.3-13.8,0-19.1l-85.4-85.6l85.6-85.6C347.6,146.7,347.6,138.2,342.3,132.9z"
-                    fill={this.closeIconColor} />
+                    fill={this.closeIconColor}/>
                 </g>
               </svg>
-              <div id={this.containerId} />
+              <div id={this.containerId}/>
             </div>
         }
       </div>
