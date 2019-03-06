@@ -279,8 +279,8 @@ class Avatar extends React.Component {
     };
 
     const getPreview = () => crop.toDataURL({
-      x: crop.x() - crop.width() / 2,
-      y: crop.y() - crop.height() / 2,
+      x: crop.x(),
+      y: crop.y(),
       width: crop.width(),
       height: crop.height()
     });
