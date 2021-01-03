@@ -187,15 +187,15 @@ class Avatar extends React.Component {
     this.onFileLoadCallback(file);
 
     const ref = this;
-    reader.onloadend = () => {
-      image.src = reader.result;
+    // reader.onloadend = () => {
+    //   image.src = reader.result;
 
-      ref.setState({image, file, showLoader: false}, () => {
-        if (ref.image.complete) return ref.init();
-        ref.image.onload = () => ref.init()
-      })
-    };
-    reader.readAsDataURL(file)
+    //   ref.setState({image, file, showLoader: false}, () => {
+    //     if (ref.image.complete) return ref.init();
+    //     ref.image.onload = () => ref.init()
+    //   })
+    // };
+    // reader.readAsDataURL(file)
     EXIF.getData(file, function() {
       let exifOrientation = EXIF.getTag(this, "Orientation");
       LoadImage(
