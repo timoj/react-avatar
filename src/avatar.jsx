@@ -198,6 +198,7 @@ class Avatar extends React.Component {
     // reader.readAsDataURL(file)
     EXIF.getData(file, function() {
       let exifOrientation = EXIF.getTag(this, "Orientation");
+      console.log("HI", exifOrientation);
       LoadImage(
         file,
         function (image, data) {
@@ -417,6 +418,7 @@ class Avatar extends React.Component {
       width: lowestSide * 0.8,
       height: lowestSide * 0.8,
       fillPatternImage: this.image,
+      fillPatternRotation: 
       fillPatternOffset: {
         x: (this.halfWidth - (lowestSide * 0.8) / 2) / this.scale,
         y: (this.halfHeight - (lowestSide * 0.8) / 2) / this.scale
