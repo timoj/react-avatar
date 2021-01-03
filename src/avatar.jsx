@@ -198,7 +198,7 @@ class Avatar extends React.Component {
     // reader.readAsDataURL(file)
     EXIF.getData(file, function() {
       let exifOrientation = EXIF.getTag(this, "Orientation");
-      console.log("HI", exifOrientation);
+      alert(exifOrientation);
       LoadImage(
         file,
         function (image, data) {
